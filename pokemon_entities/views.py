@@ -59,13 +59,15 @@ def show_pokemon(request, pokemon_id):
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
     one_pokemon = Pokemon.objects.get(id=pokemon_id)
     one_pokemon_url = request.build_absolute_uri(one_pokemon.photo.url)
-    pokemon_entities = PokemonEntity.objects.filter(pokemon=one_pokemon)
+    now_date_time = localtime(timezone=pytz.timezone("Europe/Moscow"))
 
-    for pokemon_entity in pokemon_entities:
+    pokemon_entities = one_pokemon.entities.filter(appeared_at__lte=now_date_time,
+                                                   disappeared_at__gte=now_date_time)
+    for entity in pokemon_entities:
         add_pokemon(
             folium_map,
-            pokemon_entity.lat,
-            pokemon_entity.lon,
+            entity.lat,
+            entity.lon,
             one_pokemon_url
         )
 
