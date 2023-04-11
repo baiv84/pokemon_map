@@ -32,19 +32,18 @@ def show_all_pokemons(request):
     """Show all pokemons on the map"""
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
     now_date_time = localtime(timezone=pytz.timezone("Europe/Moscow"))
-    pokemons = PokemonEntity.objects.filter(appeared_at__lte=now_date_time,
-                                            disappeared_at__gte=now_date_time)
-
+    alive_pokemon_entities = PokemonEntity.objects.filter(appeared_at__lte=now_date_time,
+                                                          disappeared_at__gte=now_date_time)
     pokemons_on_page = []
-    for pokemon in pokemons:
-        pokemon_url = request.build_absolute_uri(pokemon.pokemon.photo.url)
-        pokemons_on_page.append(dict(pokemon_id=pokemon.pokemon.id,
+    for pokemon_entity in alive_pokemon_entities:
+        pokemon_url = request.build_absolute_uri(pokemon_entity.pokemon.photo.url)
+        pokemons_on_page.append(dict(pokemon_id=pokemon_entity.pokemon.id,
                                      img_url=pokemon_url,
-                                     title_ru=pokemon.pokemon.title_ru))
+                                     title_ru=pokemon_entity.pokemon.title_ru))
         add_pokemon(
                 folium_map,
-                pokemon.lat,
-                pokemon.lon,
+                pokemon_entity.lat,
+                pokemon_entity.lon,
                 pokemon_url
         )
 
@@ -57,25 +56,25 @@ def show_all_pokemons(request):
 def show_pokemon(request, pokemon_id):
     """Show pokemon with particular <pokemon_id> on the map"""
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
-    one_pokemon = Pokemon.objects.get(id=pokemon_id)
-    one_pokemon_url = request.build_absolute_uri(one_pokemon.photo.url)
+    pokemon = Pokemon.objects.get(id=pokemon_id)
+    pokemon_url = request.build_absolute_uri(pokemon.photo.url)
     now_date_time = localtime(timezone=pytz.timezone("Europe/Moscow"))
 
-    pokemon_entities = one_pokemon.entities.filter(appeared_at__lte=now_date_time,
-                                                   disappeared_at__gte=now_date_time)
-    for entity in pokemon_entities:
+    alive_pokemon_entities = pokemon.entities.filter(appeared_at__lte=now_date_time,
+                                                     disappeared_at__gte=now_date_time)
+    for pokemon_entity in alive_pokemon_entities:
         add_pokemon(
             folium_map,
-            entity.lat,
-            entity.lon,
-            one_pokemon_url
+            pokemon_entity.lat,
+            pokemon_entity.lon,
+            pokemon_url
         )
 
     previous_evolution = None
     next_evolution = None
 
-    previous_pokemon = one_pokemon.previous_evolutions.first()
-    next_pokemon = one_pokemon.next_evolution
+    previous_pokemon = pokemon.previous_evolutions.first()
+    next_pokemon = pokemon.next_evolution
 
     if previous_pokemon:
         previous_evolution = dict(title_ru=previous_pokemon.title_ru,
@@ -86,11 +85,11 @@ def show_pokemon(request, pokemon_id):
                               pokemon_id=next_pokemon.id,
                               img_url=request.build_absolute_uri(next_pokemon.photo.url))
     pokemon_dict = dict(pokemon_id=pokemon_id,
-                        title_ru=one_pokemon.title_ru,
-                        title_en=one_pokemon.title_en,
-                        title_jp=one_pokemon.title_jp,
-                        description=one_pokemon.description,
-                        img_url=one_pokemon_url,
+                        title_ru=pokemon.title_ru,
+                        title_en=pokemon.title_en,
+                        title_jp=pokemon.title_jp,
+                        description=pokemon.description,
+                        img_url=pokemon_url,
                         previous_evolution=previous_evolution,
                         next_evolution=next_evolution)
 
