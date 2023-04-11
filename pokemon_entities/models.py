@@ -19,7 +19,7 @@ class Pokemon(models.Model):
 
     def __str__(self):
         """Object text representation"""
-        return f'{self.title_ru}'
+        return self.title_ru
 
 
 class PokemonEntity(models.Model):
