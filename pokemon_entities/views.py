@@ -1,6 +1,7 @@
 import pytz
 import folium
 from django.shortcuts import render
+from django.shortcuts import get_object_or_404
 from django.utils.timezone import localtime
 from pokemon_entities.models import Pokemon
 from pokemon_entities.models import PokemonEntity
@@ -56,7 +57,7 @@ def show_all_pokemons(request):
 def show_pokemon(request, pokemon_id):
     """Show pokemon with particular <pokemon_id> on the map"""
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
-    pokemon = Pokemon.objects.get(id=pokemon_id)
+    pokemon = get_object_or_404(Pokemon, id=pokemon_id)
     pokemon_url = request.build_absolute_uri(pokemon.photo.url)
     now_date_time = localtime(timezone=pytz.timezone("Europe/Moscow"))
 
